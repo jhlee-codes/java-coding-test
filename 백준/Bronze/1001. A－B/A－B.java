@@ -5,6 +5,8 @@ public class Main {
         Scanner s = new Scanner(System.in);
         int firstNum = s.nextInt();
         int secondNum = s.nextInt();
+        s.close();
+        
         System.out.println(firstNum-secondNum);
     }
 }
