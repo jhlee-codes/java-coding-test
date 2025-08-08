@@ -1,52 +1,30 @@
-import java.util.*;
+import java.util.HashMap;
 
 class Solution {
     public int[] solution(int N, int[] stages) {
-        return getArr(N, stages);
-    }
-    
-    public int[] getArr(int N, int[] stages) {
-        
-        // 스테이지별 실패율 배열
-        Double[] failRateArr = new Double[N];
-        // 스테이지 번호 구분용 실패율 배열 (깊은 복사)
-        Double[] failRateStage = new Double[N];
-        // 최종 결과 배열
-        int[] result = new int[N];
-        
-        // 실패율 구하기
-        for (int i=0; i<N; i++) {
-
-            int challengerCnt = 0;
-            int clearCnt = 0;
-            int failerCnt =0;
-            int stageNum = i + 1;
-            
-            for (int stage : stages) {
-                if (stage >= stageNum) challengerCnt ++;
-                if (stage > stageNum) clearCnt ++;
-            }
-            
-            failerCnt = challengerCnt - clearCnt;
-            failRateArr[i] = challengerCnt !=0 ? (double) failerCnt / challengerCnt : 0.0;
+        // 스테이지별 도전자 수
+        int[] challenger = new int[N + 2];
+        for (int i = 0; i < stages.length; i++) {
+            challenger[stages[i]] += 1;
         }
         
-        failRateStage = Arrays.copyOf(failRateArr, N);
+        // 스테이지별 실패한 사용자 수 계산
+        HashMap<Integer, Double> fails = new HashMap<>();
+        double total = stages.length;
         
-        // 내림차순 정렬
-        Arrays.sort(failRateArr, Collections.reverseOrder());
-        
-        boolean[] visited = new boolean[N];
-        for (int i=0; i<failRateArr.length; i++) {
-            for (int j=0; j<failRateStage.length; j++) {
-                if (failRateArr[i] == failRateStage[j] && !visited[j]) {
-                    result[i] = j+1;
-                    visited[j] = true;
-                    break;
-                }
+        // 각 스테이지를 순회하며, 실패율 계산
+        for (int i = 1; i <= N; i++) {
+            if (challenger[i] == 0) {
+                fails.put(i, 0.0);
+            } else {
+                fails.put(i, challenger[i] / total);
+                total -= challenger[i];
             }
         }
         
-        return result;
+        return fails.entrySet().stream()
+            .sorted((o1,o2) -> Double.compare(o2.getValue(), o1.getValue()))
+            .mapToInt(HashMap.Entry::getKey)
+            .toArray();
     }
 }
