@@ -12,19 +12,14 @@ class Solution {
         
         for (int i = 0; i <= discount.length - 10; i++) {
             
-            HashMap<String, Integer> wantMapCp = new HashMap<>(wantMap);
+            HashMap<String, Integer> dcMap = new HashMap<>();
             for (int j = i; j < i + 10; j++) {
-                if (wantMapCp.containsKey(discount[j])) {
-                    int num = wantMapCp.getOrDefault(discount[j], 0) - 1;
-                    if (num > 0) {
-                        wantMapCp.put(discount[j], num);
-                    } else {
-                        wantMapCp.remove(discount[j]);
-                    }
+                if (wantMap.containsKey(discount[j])) {
+                    dcMap.put(discount[j], dcMap.getOrDefault(discount[j], 0) + 1);
                 } 
             }
             
-            if (wantMapCp.isEmpty()) cnt++;
+            if (dcMap.equals(wantMap)) cnt++;
             
         }
         
