@@ -1,38 +1,64 @@
 import java.util.*;
 
 class Solution {
-    public int[] solution(String[] genres, int[] plays) {
-        List<Integer> album = new ArrayList<>();
-        // {장르 : 총재생횟수}
-        Map<String, Integer> genresMap = new HashMap<>();
-        //{장르 : {노래 고유번호 : 재생횟수}
-        Map<String, Map<Integer, Integer>> playsMap = new HashMap<>();
+    
+    public class Music {
+        private String genre;
+        private int id;
+        private int played;
         
-        for (int i = 0; i < genres.length; i++) {
-            genresMap.put(genres[i], genresMap.getOrDefault(genres[i], 0) + plays[i]);
-            playsMap.computeIfAbsent(genres[i], k -> new HashMap<>())
-                    .put(i, plays[i]);
+        public Music(String genre, int id, int played) {
+            this.genre = genre;
+            this.id = id;
+            this.played = played;
+        }
+    
+        public String getGenre() {
+            return genre;   
         }
         
-        List<String> keySet = new ArrayList<>(genresMap.keySet());
+        public int getId() {
+            return id;
+        }
+        
+        public int getPlayed() {
+            return played;
+        }
+    }
+    
+    public int[] solution(String[] genres, int[] plays) {
+        // 장르별 총 재생수
+        Map<String, Integer> total = new HashMap<>();
+        // 장르별 곡 리스트
+        Map<String, List<Music>> byGenre = new HashMap<>();
+        
+        for (int i = 0; i < genres.length; i++) {
+            String genre = genres[i];
+            int play = plays[i];
+        
+            total.put(genre, total.getOrDefault(genre, 0) + play);
+            byGenre.computeIfAbsent(genre, k -> new ArrayList<>())
+                .add(new Music(genre, i, play));
+        }
         
         // 장르 정렬
-        keySet.sort((o1, o2) -> genresMap.get(o2).compareTo(genresMap.get(o1)));
+        List<String> genreOrder = new ArrayList<>(total.keySet());
+        genreOrder.sort((a,b) -> total.get(b).compareTo(total.get(a)));
         
-        for (String key : keySet) {
+        // 노래 정렬
+        Comparator<Music> songOrder = 
+            Comparator.comparingInt(Music::getPlayed).reversed()
+            .thenComparingInt(Music::getId);
+        
+        List<Integer> album = new ArrayList<>();
+        
+        for (String genre : genreOrder) {
             
-            Map<Integer, Integer> inner = playsMap.get(key);
-            // 노래 정렬
-            List<Map.Entry<Integer, Integer>> songs = new ArrayList<>(inner.entrySet());
+            List<Music> list = byGenre.get(genre);
+            list.sort(songOrder);
             
-            songs.sort((e1, e2) -> {
-                  int cmp = e2.getValue().compareTo(e1.getValue());
-                  if (cmp != 0) return cmp;
-                  return e1.getKey().compareTo(e2.getKey());
-            });
-            
-            album.add(songs.get(0).getKey());
-            if (songs.size() > 1) album.add(songs.get(1).getKey());    
+            album.add(list.get(0).getId());
+            if (list.size() > 1) album.add(list.get(1).getId());
         }
         
         int[] answer = new int[album.size()];
