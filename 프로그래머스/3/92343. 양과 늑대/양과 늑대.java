@@ -2,58 +2,58 @@ import java.util.*;
 
 class Solution {
     
-    private int bestCnt = 0;
-    private int[] info;
-    private Map<Integer, List<Integer>> pasture;
+    private static class Info {
+        int node, sheep, wolf;
+        HashSet<Integer> visited;
+        
+        public Info(int node, int sheep, int wolf, HashSet<Integer> visited) {
+            this.node = node;
+            this.sheep = sheep;
+            this.wolf = wolf;
+            this.visited = visited;
+        }
+    }
+    
+    private static ArrayList<Integer>[] tree;
     
     public int solution(int[] info, int[][] edges) {
         
-        this.info = info;
-        pasture = new HashMap<>();
-        
-        for (int i = 0; i < edges.length; i++) {
-            int u = edges[i][0];
-            int v = edges[i][1];
-
-            pasture.computeIfAbsent(u, k -> new ArrayList<>()).add(v);
+        // 트리 생성
+        tree = new ArrayList[info.length];
+        for (int i = 0; i < tree.length; i++) {
+            tree[i] = new ArrayList<>();
         }
         
-        boolean[] visited = new boolean[info.length];
-        visited[0] = true;
-    
-        List<Integer> candidates = new ArrayList<>();
-        candidates.addAll(pasture.getOrDefault(0, Collections.emptyList()));
+        for (int[] edge : edges) {
+            tree[edge[0]].add(edge[1]);
+        }
         
-        // 루트 노드는 항상 양(0)
-        bestCnt = 1;
-        dfs(1, 0, candidates, visited);
-    
-        return bestCnt;
-    }
-    
-    private void dfs(int sheep, int wolf, List<Integer> candidates, boolean[] visited) {
+        int bestCnt = 0;
         
-        bestCnt = Math.max(bestCnt, sheep);
+        ArrayDeque<Info> queue = new ArrayDeque<>();
+        queue.add(new Info(0, 1, 0, new HashSet<>()));
         
-        for (int i = 0; i < candidates.size(); i++) {
-            int nxt = candidates.get(i);
+        // BFS 방식
+        while (!queue.isEmpty()) {
+            Info now = queue.poll();
             
-            boolean[] nextVisited = visited.clone();
-            nextVisited[nxt] = true;
+            bestCnt = Math.max(bestCnt, now.sheep);
+            now.visited.addAll(tree[now.node]);
             
-            int nextSheep = sheep + (info[nxt] == 0 ? 1 : 0);
-            int nextWolf  = wolf  + (info[nxt] == 1 ? 1 : 0);
-            
-            if (nextWolf >= nextSheep) continue;
-            
-            List<Integer> nextCandidates = new ArrayList<>(candidates);
-            nextCandidates.remove(i);
-            
-            for (int child : pasture.getOrDefault(nxt, Collections.emptyList())) {
-                if (!nextVisited[child]) nextCandidates.add(child);
+            for (int next : now.visited) {
+                HashSet<Integer> set = new HashSet<>(now.visited);
+                set.remove(next);
+                
+                if (info[next] == 1) {
+                    if (now.sheep != now.wolf + 1) {
+                        queue.add(new Info(next, now.sheep, now.wolf + 1, set));
+                    }
+                } else {
+                    queue.add(new Info(next, now.sheep + 1, now.wolf, set));
+                }
             }
-            
-            dfs(nextSheep, nextWolf, nextCandidates, nextVisited);
         }
+        
+        return bestCnt;
     }
 }
