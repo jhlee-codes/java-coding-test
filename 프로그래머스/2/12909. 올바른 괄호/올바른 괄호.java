@@ -2,24 +2,21 @@ import java.util.*;
 
 class Solution {
     boolean solution(String s) {
-        Stack<Character> stack = new Stack<>();
+        Deque<Character> stack = new ArrayDeque<>();
+        
+        if (s.charAt(0) == ')' || s.charAt(s.length() - 1) == '(') return false;
         
         for (int i = 0; i < s.length(); i++) {
-            char target = s.charAt(i);
-            if (target == '(') {
-                stack.push(target);
+            Character cur = s.charAt(i);
+            
+            if (cur == '(') {
+                stack.addLast(cur);
             } else {
-                if (!stack.isEmpty()) {
-                    stack.pop();
-                } else {
-                    return false;
-                }
+                if (stack.isEmpty()) return false;
+                stack.pollLast();
             }
         }
         
-        if (!stack.isEmpty()) {
-            return false;
-        }
-        return true;
+        return stack.isEmpty();
     }
 }
