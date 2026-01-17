@@ -2,27 +2,35 @@ import java.util.*;
 
 class Solution {
     public int solution(String[] want, int[] number, String[] discount) {
+    
+        Map<String, Integer> wantMap = new HashMap<>();
         
-        HashMap<String, Integer> wantMap = new HashMap<>();
-        int cnt = 0;
+        int result = 0;
         
         for (int i = 0; i < want.length; i++) {
             wantMap.put(want[i], number[i]);
         }
         
         for (int i = 0; i <= discount.length - 10; i++) {
-            
-            HashMap<String, Integer> dcMap = new HashMap<>();
+            Map<String, Integer> dcMap = new HashMap<>();
+            boolean isOk = true;
+
             for (int j = i; j < i + 10; j++) {
-                if (wantMap.containsKey(discount[j])) {
-                    dcMap.put(discount[j], dcMap.getOrDefault(discount[j], 0) + 1);
-                } 
+                String item = discount[j];
+                dcMap.put(item, dcMap.getOrDefault(item, 0) + 1);
             }
             
-            if (dcMap.equals(wantMap)) cnt++;
+            for (int j = 0; j < want.length; j++) {
+                String cur = want[j];
+                // wantMap 보다 숫자가 작으면 카운트 포함 x
+                if (wantMap.get(cur) > dcMap.getOrDefault(cur, 0)) {
+                    isOk = false;
+                    break;
+                }
+            }
             
+            if (isOk) result++;
         }
-        
-        return cnt;
+        return result;
     }
 }
