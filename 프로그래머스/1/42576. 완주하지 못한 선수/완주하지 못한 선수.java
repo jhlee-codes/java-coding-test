@@ -2,18 +2,21 @@ import java.util.*;
 
 class Solution {
     public String solution(String[] participant, String[] completion) {  
-        HashMap<String, Integer> completionMap = new HashMap<>();
+        Map<String, Integer> cpMap = new HashMap<>();
         
         for (int i = 0; i < completion.length; i++) {
-            String targetKey = completion[i];
-            completionMap.put(targetKey, completionMap.getOrDefault(targetKey, 0) + 1);  
+            String cur = completion[i];
+            cpMap.put(cur, cpMap.getOrDefault(cur, 0) + 1);
         }
-
-        for (String target : participant) {
-            int cnt = completionMap.getOrDefault(target, 0);
-            if (cnt == 0) return target;
-            completionMap.put(target, cnt - 1);
+        
+        for (String str : participant) {
+            if (cpMap.containsKey(str) && cpMap.get(str) > 0) {
+                cpMap.put(str, cpMap.getOrDefault(str, 0) - 1);
+            } else {
+                return str;
+            }
         }
+        
         return "";
     }
 }
