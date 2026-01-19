@@ -2,34 +2,44 @@ import java.util.*;
 
 class Solution {
     public String[] solution(String[] record) {
-        List<String> answer = new ArrayList<>();
         
-        HashMap<String, String> userMap = new HashMap<>();
+        Map<String, String> userMap = new HashMap<>();
+        List<String> result = new ArrayList<>();
         
         for (int i = 0; i < record.length; i++) {
-            String id, nickName;
-            String[] parts = record[i].split(" ");
+            String[] target = record[i].split(" ");
+            String cmd = target[0];
+            String userId = target[1];
             
-            if (parts[0].equals("Enter") || parts[0].equals("Change")) {
-                id = parts[1];
-                nickName = parts[2];
-                userMap.put(id, nickName);
+            if (cmd.equals("Leave")) continue;
+            
+            String name = target[2];
+            
+            switch (cmd) {
+                case "Enter":
+                    userMap.put(userId, name);
+                    break;
+                case "Change":
+                    userMap.put(userId, name);
+                    break;
             }
         }
         
-        for (int i = 0; i < record.length; i++) {
-            String id, nickName;
-            String[] parts = record[i].split(" ");
-            id = parts[1];
-            nickName = userMap.get(id);
+        for (String str : record) {
+            String[] target = str.split(" ");
+            String cmd = target[0];
+            String userId = target[1];
+            String name = userMap.get(userId);
             
-            if (parts[0].equals("Enter")) {
-                answer.add(nickName + "님이 들어왔습니다.");
-            } else if (parts[0].equals("Leave")) {
-                answer.add(nickName + "님이 나갔습니다.");
+            switch (cmd) {
+                case "Enter":
+                    result.add(name + "님이 들어왔습니다.");
+                    break;
+                case "Leave":
+                    result.add(name + "님이 나갔습니다.");
+                    break;
             }
         }
-        
-        return answer.toArray(new String[0]);
+        return result.toArray(new String[result.size()]);
     }
 }
