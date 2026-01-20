@@ -1,48 +1,36 @@
 import java.util.*;
 
 class Solution {
+    
     public int[] solution(String[] id_list, String[] report, int k) {
-        int[] answer = new int[id_list.length];
         
-        // {신고한 사람:신고 당한 사람 배열}
-        // 중복 제거 -> Set
-        Map<String, Set<String>> userReportMap = new HashMap<>();
-        // {신고 당한 사람:신고 횟수}  
-        Map<String, Integer> reportCntMap = new HashMap<>();
+        // {유저 : id}
+        Map<String, Integer> userMap = new HashMap<>();
+        // {target : 신고자 Set}
+        Map<String, Set<String>> reportMap = new HashMap<>();
+        
+        int[] result = new int[id_list.length];
+        
+        for (int i = 0; i < id_list.length; i++) userMap.put(id_list[i], i);
         
         for (int i = 0; i < report.length; i++) {
-            String user = report[i].split(" ")[0];
-            String reportUser = report[i].split(" ")[1];
+            String[] cur = report[i].split(" ");
+            String user = cur[0];
+            String target = cur[1];
             
-            // Set에 추가될때(중복이 아닐때)만 신고 횟수 + 1
-            Set<String> set = userReportMap.computeIfAbsent(user, r -> new HashSet<>());
-            if (set.add(reportUser)) {
-                reportCntMap.put(reportUser, reportCntMap.getOrDefault(reportUser, 0) + 1);            
-            }
+            reportMap.computeIfAbsent(target, r -> new HashSet<>()).add(user);
         }
         
-        // 신고 횟수가 k번 이상인 유저 리스트
-        Set<String> blackList = new HashSet<>();
-        
-        reportCntMap.forEach((key, value) -> {
-            if (value >= k) {
-                blackList.add(key);
-            }
-        });
-        
-        for (int i = 0; i < id_list.length; i++) {
-            String reporter = id_list[i];
-            Set<String> targetSet = userReportMap.getOrDefault(reporter, Collections.emptySet());
-            
-            int cnt = 0;
-            for (String user : targetSet) {
-                if (blackList.contains(user)) {
-                    cnt ++;
+        for (Map.Entry<String, Set<String>> entry : reportMap.entrySet()) {
+            // 신고 횟수가 k번 이상이면 신고한 유저 처리 결과 메일 + 1
+            if (entry.getValue().size() >= k) {
+                for (String u : entry.getValue()) {
+                    int idx = userMap.get(u);
+                    result[idx] += 1;
                 }
             }
-            answer[i] = cnt;
         }
         
-        return answer;
+        return result;
     }
 }
