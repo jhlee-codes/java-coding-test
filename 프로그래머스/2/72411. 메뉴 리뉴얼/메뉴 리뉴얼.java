@@ -1,51 +1,55 @@
 import java.util.*;
-/* 코딩테스트 합격자되기 답안 참고 -> 혼자 다시 풀어보기 */
+
 class Solution {
-    
-    // {메뉴 개수 : {메뉴 구성 : 총 주문 수}}
-    private static HashMap<Integer, HashMap<String, Integer>> courseMap;
-    
+
     public String[] solution(String[] orders, int[] course) {
+        // 코스 길이별 조합 카운트
+        Map<Integer, Map<String, Integer>> cntByCourse = new HashMap<>();
         
-        courseMap = new HashMap<>();
-        
-        for (int i : course) {
-            courseMap.put(i, new HashMap<>());
-        }
-        
-        // 코스를 배열로 만들고 오름차순 정렬 후 가능한 모든 메뉴 구성
         for (String order : orders) {
-            char[] orderArray = order.toCharArray();
-            Arrays.sort(orderArray);
-            combinations(0, orderArray, "");
+            char[] items = order.toCharArray();
+            Arrays.sort(items);
+            
+            for (int c : course) {
+                if (items.length < c) continue;
+                Map<String, Integer> inner = cntByCourse.computeIfAbsent(c, m -> new HashMap<>());
+                // dfs로 길이가 c인 조합 만들기
+                dfs(items, 0, c, new StringBuilder(), inner);
+            }
         }
         
-        List<String> answer = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         
-        for (HashMap<String, Integer> count : courseMap.values()) {
-            count.values()
-                .stream()
-                .max(Comparator.comparingInt(o -> o))
-                .ifPresent(cnt -> count.entrySet()
-                          .stream()
-                          .filter(entry -> cnt.equals(entry.getValue()) && cnt > 1)
-                          .forEach(entry -> answer.add(entry.getKey())));
+        for (int c : course) {
+            Map<String, Integer> inner = cntByCourse.get(c);
+            if (inner == null) continue;
+            
+            int max = 0;
+            for (int v : inner.values()) max = Math.max(max, v);
+            
+            if (max < 2) continue;
+            
+            for (Map.Entry<String, Integer> e : inner.entrySet()) {
+                if (e.getValue() == max) result.add(e.getKey());
+            }
         }
         
-        Collections.sort(answer);
-        return answer.toArray(new String[0]);
+        Collections.sort(result);
+        return result.toArray(new String[0]);
     }
-    
-    // 만들 수 있는 모든 조합을 만드는 재귀 함수
-    private static void combinations(int idx, char[] order, String result) {
-        if (courseMap.containsKey(result.length())) {
-            HashMap<String, Integer> map = courseMap.get(result.length());
-            // 카운트 1 증가
-            map.put(result, map.getOrDefault(result, 0) + 1);
+   
+    private void dfs(char[] arr, int start, int cnt, StringBuilder sb, Map<String, Integer> map) {
+        // 조합 완성시 카운트 + 1
+        if (sb.length() == cnt) {
+            String key = sb.toString();
+            map.put(key, map.getOrDefault(key, 0) + 1);
+            return;
         }
         
-        for (int i = idx; i < order.length; i++) {
-            combinations(i + 1, order, result + order[i]);
+        for (int i = start; i < arr.length; i++) {
+            sb.append(arr[i]);
+            dfs(arr, i + 1, cnt, sb, map);
+            sb.deleteCharAt(sb.length() - 1); // 백트래킹
         }
     }
 }
