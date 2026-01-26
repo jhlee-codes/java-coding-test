@@ -2,58 +2,47 @@ import java.util.*;
 
 class Solution {
     
-    private static class Info {
-        int node, sheep, wolf;
-        HashSet<Integer> visited;
-        
-        public Info(int node, int sheep, int wolf, HashSet<Integer> visited) {
-            this.node = node;
-            this.sheep = sheep;
-            this.wolf = wolf;
-            this.visited = visited;
-        }
-    }
-    
-    private static ArrayList<Integer>[] tree;
+    int result = 0;
+    List<Integer>[] child;
+    int[] info;
     
     public int solution(int[] info, int[][] edges) {
         
-        // 트리 생성
-        tree = new ArrayList[info.length];
-        for (int i = 0; i < tree.length; i++) {
-            tree[i] = new ArrayList<>();
+        this.info = info;
+        int n = info.length;
+        child = new ArrayList[n];
+        
+        for (int i = 0; i < n; i++) child[i] = new ArrayList<>();
+        
+        for (int[] e : edges) {
+            child[e[0]].add(e[1]);
         }
         
-        for (int[] edge : edges) {
-            tree[edge[0]].add(edge[1]);
-        }
+        List<Integer> candidates = new ArrayList<>();
+        candidates.addAll(child[0]);
+
+        dfs(1, 0, candidates);
         
-        int bestCnt = 0;
+        return result;
+    }
+    
+    private void dfs(int sheep, int wolf, List<Integer> candidates) {
+        if (wolf >= sheep) return;
         
-        ArrayDeque<Info> queue = new ArrayDeque<>();
-        queue.add(new Info(0, 1, 0, new HashSet<>()));
+        result = Math.max(result, sheep);
         
-        // BFS 방식
-        while (!queue.isEmpty()) {
-            Info now = queue.poll();
+        for (int i = 0; i < candidates.size(); i++) {
             
-            bestCnt = Math.max(bestCnt, now.sheep);
-            now.visited.addAll(tree[now.node]);
+            int next = candidates.get(i);
             
-            for (int next : now.visited) {
-                HashSet<Integer> set = new HashSet<>(now.visited);
-                set.remove(next);
-                
-                if (info[next] == 1) {
-                    if (now.sheep != now.wolf + 1) {
-                        queue.add(new Info(next, now.sheep, now.wolf + 1, set));
-                    }
-                } else {
-                    queue.add(new Info(next, now.sheep + 1, now.wolf, set));
-                }
-            }
-        }
+            int s = sheep + (info[next] == 0 ? 1 : 0);
+            int w = wolf + (info[next] == 0 ? 0 : 1);
+            
+            List<Integer> nextCandidates = new ArrayList<>(candidates);
+            nextCandidates.remove(i);
+            nextCandidates.addAll(child[next]);
         
-        return bestCnt;
+            dfs(s, w, nextCandidates);
+        }
     }
 }
