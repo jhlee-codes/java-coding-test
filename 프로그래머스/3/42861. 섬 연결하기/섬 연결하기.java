@@ -1,47 +1,56 @@
 import java.util.*;
-// 모범답안
+
 class Solution {
     
-    private static int[] parent;
-    
-    private static int find(int x) {
-        if (parent[x] == x) return x;
-        // 경로 압축: x의 부모를 루트로 설정
-        return parent[x] = find(parent[x]);
+    public class Edge {
+        int idx;
+        int w;
+        
+        public Edge(int idx, int w) {
+            this.idx = idx;
+            this.w = w;
+        }
     }
-    
-    private static void union(int x, int y) {
-        int root1 = find(x);
-        int root2 = find(y);
-        parent[root2] = root1;
-    }
-    
+
     public int solution(int n, int[][] costs) {
+
+        // 인접 리스트 구성
+        List<Edge>[] graph = new ArrayList[n];
+        for (int i = 0; i < n; i++) graph[i] = new ArrayList<>();
         
-        // 비용 기준 오름차순 정렬
-        Arrays.sort(costs, (o1, o2) -> Integer.compare(o1[2], o2[2]));
-        
-        // parent 배열 초기화
-        parent = new int[n];
-        for (int i = 0; i < n; i++) {
-            parent[i] = i;
+        for (int[] e : costs) {
+            int u = e[0];
+            int v = e[1];
+            int w = e[2];
+            
+            // u -> v, v -> u 추가
+            graph[u].add(new Edge(v, w));
+            graph[v].add(new Edge(u, w));
         }
         
-        int answer = 0;
-        int edges = 0;
+        boolean[] visited = new boolean[n];
+        PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a.w));    // 후보 간선들 (최소 힙)
         
-        for (int[] edge : costs) {
-            // n - 1개의 다리가 연결된 경우 모든 섬이 연결됨
-            if (edges == n - 1) break;
+        int total = 0;  // 총 비용
+        int visitedCnt = 1; // 0번 섬 방문처리
+        visited[0] = true;
+        for (Edge e : graph[0]) pq.add(e);
+        
+        while (!pq.isEmpty() && visitedCnt < n) {
+            Edge cur = pq.poll();
             
-            // 현재 연결하려는 두 섬이 이미 연결되어 있는지 확인
-            if (find(edge[0]) != find(edge[1])) {
-                union(edge[0], edge[1]);
-                answer += edge[2];
-                edges++;
+            if (visited[cur.idx]) continue;
+            
+            visited[cur.idx] = true;
+            total += cur.w;
+            visitedCnt++;
+            
+            // 새로 포함된 섬에서 바깥으로 나가는 후보 간선들 추가
+            for (Edge next : graph[cur.idx]) {
+                if (!visited[next.idx]) pq.add(next);
             }
-        }    
+        }
         
-        return answer;
+        return total;
     }
 }
