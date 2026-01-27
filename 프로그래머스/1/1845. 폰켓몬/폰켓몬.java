@@ -1,19 +1,21 @@
 import java.util.*;
-import java.util.stream.*;
 
 class Solution {
     public int solution(int[] nums) {
+        int n = nums.length;
+        Set<Integer> mons = new HashSet<>();
+        int answer = 0;
         
-        // n / 2 수 구하기
-        int amount = nums.length / 2;
+        for (int i = 0; i < n; i++) {
+            mons.add(nums[i]);
+        }
         
-        // nums 배열을 set에 넣어 중복 제거
-        Set<Integer> pkms = Arrays.stream(nums)
-            .boxed()
-            .collect(Collectors.toSet());
+        if (mons.size() > n / 2) {
+            answer = n / 2;
+        } else {
+            answer = mons.size();
+        }
         
-        // 최소값 비교
-        int answer = Math.min(amount, pkms.size());
         return answer;
     }
 }
